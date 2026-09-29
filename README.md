@@ -2,13 +2,13 @@
 
 Scrape Craigslist search results into structured JSON: title, price, currency, category, city, subarea, neighbourhood, latitude and longitude, posted date, every photo URL, and the list fields Craigslist keeps per category: bedrooms and square feet for housing, odometer for cars, company, job title and compensation for jobs, event dates for events. Works for all 700+ Craigslist sites (US, Canada, Europe, Asia) and every category: apartments, cars and trucks, jobs, bikes, furniture, gigs, services.
 
-The scraper uses the same JSON search API Craigslist's own web app calls, through a public [Unbrowse](https://unbrowse.ai) tool. The request is sent from your machine and decoded locally, so one call returns up to 360 posts with coordinates and photos, no HTML scraping and no pagination.
+The scraper uses the same JSON search API Craigslist's own web app calls, through a public [Unbrowse](https://unbrowse.ai) tool. The request is sent from your machine and decoded locally, so one call returns up to 360 posts with coordinates and photos, no HTML scraping and no pagination. Without an Unbrowse key, or when that tool is unavailable, the scraper sends the same request straight to the site and parses it the same way.
 
 ## Quick start
 
 ```bash
 git clone https://github.com/unbrowse-ai/craigslist-scraper && cd craigslist-scraper && npm install
-export UNBROWSE_API_KEY=ub_live_...        # free key: https://unbrowse.ai
+export UNBROWSE_API_KEY=ub_live_...        # optional; free key: https://unbrowse.ai
 
 node index.mjs austin --category apa --max 200 > austin-apartments.json
 node index.mjs seattle --category bia --query trek --max-price 800 > bikes.json
@@ -73,7 +73,7 @@ const posts = await scrape("denver", { category: "cta", query: "tacoma", maxPric
 
 **Why at most 360 posts?** That is what one call of Craigslist's search API returns with full details. Narrow the search (a subarea, a keyword, a price band) or sort differently to reach other posts.
 
-**Why a key?** The search is sent through Unbrowse's public Craigslist tool, which tells your machine which request to make. The key is free; the request leaves from your IP.
+**Do I need a key?** No. With a free [Unbrowse](https://unbrowse.ai) key, the scraper runs Unbrowse's public Craigslist tool first, which tells your machine which request to send. Without a key, or when a tool is unavailable, it sends the same request directly with a normal browser user agent (one `note:` line on stderr says so). Either way the request leaves from your IP, and your key is never sent to the site.
 
 **Post descriptions and contact details?** Not included: the scraper reads search results only, and it never collects phone numbers or emails.
 

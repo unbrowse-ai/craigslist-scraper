@@ -1,16 +1,21 @@
 #!/usr/bin/env node
 // Craigslist Scraper: search results for any Craigslist city and category as structured JSON.
-// Searches go through the public Unbrowse tool for Craigslist's own search API, sent from this machine.
+// Searches go through the public Unbrowse tool for Craigslist's own search API, sent from this machine;
+// without a key, or when the tool is unavailable, that API is called directly.
 import { fileURLToPath } from "node:url";
 import { cli, readPage } from "./lib/read-page.mjs";
-import { FIRST_PAGE, decodeSearch, localFilter, parseSearchUrl, resolveSite, toItem, toolInput } from "./parse.mjs";
+import { API, FIRST_PAGE, decodeSearch, localFilter, parseSearchUrl, resolveSite, toItem, toolInput } from "./parse.mjs";
 
 const CAPABILITY = "public.sapi_craigslist_org.get_search_full";
 const HOSTS = ["sapi.craigslist.org"];
+// The request the tool stands for: Craigslist's own search API, called directly when the tool cannot run.
+const JSON_HEADERS = { accept: "application/json", origin: "https://www.craigslist.org", referer: "https://www.craigslist.org/" };
+const directUrl = ({ batch, searchPath, query }) => `${API}/full?${new URLSearchParams({ batch, cc: "US", lang: "en", searchPath, ...(query ? { query } : {}) })}`;
 
 /** One search → { posts, total } straight from Craigslist's search API (first 360 results, newest first by default). */
 async function search({ site, searchPath, query, sort }) {
-  const page = await readPage(CAPABILITY, toolInput({ areaId: site.areaId, searchPath, query, sort }), { hosts: HOSTS, minBytes: 50 });
+  const input = toolInput({ areaId: site.areaId, searchPath, query, sort });
+  const page = await readPage(CAPABILITY, input, { hosts: HOSTS, minBytes: 50, direct: { url: directUrl(input), headers: JSON_HEADERS } });
   let data;
   try {
     data = JSON.parse(page.body)?.data;
@@ -83,6 +88,6 @@ Usage: node index.mjs <city | craigslist search URL>... [options]
   --max N            posts per search (default 100, up to 360)
   --min-price N --max-price N --has-image --today
 
-Needs UNBROWSE_API_KEY (free at https://unbrowse.ai).`,
+Uses UNBROWSE_API_KEY when set (free at https://unbrowse.ai); without it, requests go straight to the site.`,
   );
 }

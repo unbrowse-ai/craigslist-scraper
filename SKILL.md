@@ -10,7 +10,7 @@ description: Search Craigslist in any city and category (apartments, cars, jobs,
 - Any of the 700+ Craigslist sites; search results only (no post bodies or contact details).
 
 ## Run
-Needs `UNBROWSE_API_KEY` (free at https://unbrowse.ai). From the repo root:
+Uses `UNBROWSE_API_KEY` when set (free at https://unbrowse.ai); without it, requests go straight to the site. From the repo root:
 
 ```bash
 node index.mjs austin --category apa --max-price 1200 > out.json
